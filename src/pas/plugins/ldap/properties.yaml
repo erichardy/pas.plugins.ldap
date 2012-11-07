@@ -56,9 +56,9 @@ widgets:
         value: "expr:not isinstance(context.users.objectClasses, basestring) and context.users.objectClasses or [context.users.objectClasses]"
         props:
             label: Object classes for User creation
-        widgets: 
+        widgets:
             - oc:
-                factory: field:text                         
+                factory: field:text
     - memberOfSupport:
         factory: field:label:checkbox
         value: expr:context.users.memberOfSupport
@@ -98,6 +98,14 @@ widgets:
             head:
                 key: Name on Sheet
                 value: LDAP Attribute
+    - readonly_attributes:
+        factory: field:error:array
+        value: expr:context.users_readonly_attributes
+        props:
+            label: User Property-Sheet Readonly Attributes
+        widgets:
+            - readonly:
+                factory: field:text
 - groups:
     factory: fieldset
     props:

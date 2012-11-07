@@ -25,10 +25,12 @@ class LDAPUserPropertySheet(UserPropertySheet):
         self._plugin = aq_base(plugin)
         self._properties = dict()
         self._attrmap = dict()
+        self._readonly_attributes = list()
         self._ldapprincipal_id = principal.getId()
         if self._ldapprincipal_id in plugin.users:
             pcfg = ILDAPUsersConfig(plugin)
             self._ldapprincipal_type = 'users'
+            self._readonly_attributes = pcfg.readonly_attributes
         else:
             pcfg = ILDAPGroupsConfig(plugin)
             self._ldapprincipal_type = 'groups'
@@ -59,7 +61,9 @@ class LDAPUserPropertySheet(UserPropertySheet):
         return ldap_principals[self._ldapprincipal_id]
 
     def canWriteProperty(self, obj, id):
-        return id in self._properties
+        #import pdb;pdb.set_trace()
+        print self._readonly_attributes
+        return id in self._properties and not id in self._readonly_attributes
 
     def setProperty(self, obj, id, value):
         assert(id in self._properties)

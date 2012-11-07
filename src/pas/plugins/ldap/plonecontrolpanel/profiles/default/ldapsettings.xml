@@ -40,4 +40,6 @@
  <element key="users.queryFilter"
     type="string">(objectClass=inetOrgPerson)</element>
  <element key="users.scope" type="int">1</element>
+ <element key="users.readonly_attributes" type="list">
+ </element>
 </object>

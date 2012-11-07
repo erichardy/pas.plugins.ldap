@@ -40,13 +40,11 @@ _ = MessageFactory('pas.plugins.ldap')
 
 
 class BasePropertiesForm(BrowserView):
-    
     scope_vocab = [
         (str(BASE), 'BASE'),
         (str(ONELEVEL), 'ONELEVEL'),
         (str(SUBTREE), 'SUBTREE'),
     ]
-    
     static_attrs_users  = ['rdn', 'id', 'login']
     static_attrs_groups = ['rdn', 'id']
 
@@ -71,12 +69,20 @@ class BasePropertiesForm(BrowserView):
         self.users_attrmap = odict()
         for key in self.static_attrs_users:
             self.users_attrmap[key] = self.users.attrmap.get(key)
-        
+
         self.users_propsheet_attrmap = odict()
         for key, value in self.users.attrmap.items():
             if key in self.static_attrs_users:
                 continue
             self.users_propsheet_attrmap[key] = value
+
+        self.users_readonly_attributes = list()
+        readonly_attributes_value = self.users.readonly_attributes
+        if readonly_attributes_value:
+            if isinstance(readonly_attributes_value, basestring):
+                self.users_readonly_attributes = [readonly_attributes_value]
+            else:
+                self.users_readonly_attributes = readonly_attributes_value
 
         # prepare groups data on form context
         self.groups_attrmap = odict()
@@ -95,7 +101,7 @@ class BasePropertiesForm(BrowserView):
             return controller.rendered
         self.request.RESPONSE.redirect(controller.next)
         return u''
-    
+
     def save(self, widget, data):
         props =  ILDAPProps(self.plugin)
         users =  ILDAPUsersConfig(self.plugin)
@@ -114,7 +120,7 @@ class BasePropertiesForm(BrowserView):
         password = fetch('server.password')
         if password is not UNSET:
             props.password = password
-        
+
         # XXX: later
         #props.start_tls = fetch('server.start_tls')
         #props.tls_cacertfile = fetch('server.tls_cacertfile')
@@ -137,10 +143,10 @@ class BasePropertiesForm(BrowserView):
         if users.scope is not UNSET:
             users.scope = int(users.scope.strip('"'))
         users.queryFilter = fetch('users.query')
-        objectClasses = fetch('users.object_classes')
-        users.objectClasses = objectClasses
+        users.objectClasses = fetch('users.object_classes')
         users.memberOfSupport = fetch('users.memberOfSupport')
         users.account_expiration = fetch('users.account_expiration')
+        users.readonly_attributes = fetch('users.readonly_attributes')
         users._expiresAttr = fetch('users.expires_attr')
         users._expiresUnit = int(fetch('users.expires_unit', 0))
         groups = self.groups
@@ -155,10 +161,9 @@ class BasePropertiesForm(BrowserView):
         if groups.scope is not UNSET:
             groups.scope = int(groups.scope.strip('"'))
         groups.queryFilter = fetch('groups.query')
-        objectClasses = fetch('groups.object_classes')
-        groups.objectClasses = objectClasses
+        groups.objectClasses = fetch('groups.object_classes')
         groups.memberOfSupport = fetch('groups.memberOfSupport')
-        
+
     def connection_test(self):
         props =  ILDAPProps(self.plugin)
         users =  ILDAPUsersConfig(self.plugin)
@@ -253,6 +258,7 @@ class UsersConfig(object):
     objectClasses = propproxy('users.objectClasses')
     memberOfSupport = propproxy('users.memberOfSupport')
     account_expiration = propproxy('users.account_expiration')
+    readonly_attributes = propproxy('users.readonly_attributes')
     _expiresAttr = propproxy('users.expires_attr')
     _expiresUnit = propproxy('users.expires_unit')
 
@@ -264,10 +270,11 @@ class UsersConfig(object):
     def expiresUnit(self):
         return self.account_expiration and self._expiresUnit or 0
 
+
 @implementer(ILDAPGroupsConfig)
 @adapter(ILDAPPlugin)
 class GroupsConfig(object):
-    
+
     def __init__(self, plugin):
         self.plugin = plugin
 
