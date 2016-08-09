@@ -21,6 +21,8 @@ See section *TODO*.
 Installation
 ============
 
+Eric Hardy fork
+
 
 Zope2
 -----
